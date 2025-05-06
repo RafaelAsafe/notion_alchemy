@@ -1,7 +1,7 @@
 import requests
 import datetime
 from typing import Dict,Type, List, Any
-from models import NotionModel
+from notion_alchemy.models import NotionModel
 
 
 class NotionClient:

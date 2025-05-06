@@ -1,5 +1,5 @@
 from typing import Dict
-from notion import  NotionProperty, RichTextProperty
+from notion_alchemy.notion import  NotionProperty, RichTextProperty
 
 
 class NotionModel:
