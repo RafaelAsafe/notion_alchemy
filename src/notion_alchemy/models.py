@@ -1,6 +1,40 @@
 from typing import Dict
 from notion_alchemy.notion import  NotionProperty, RichTextProperty
 
+# refazendo
+        # o campos de propriedades tem que ser transformados em propriedades Notion 
+class NotionDatabaseModel():
+    """Classe Notion para represtação de databases"""
+ 
+    _database_id: str = None
+    _properties: Dict[str, NotionProperty] = {}
+
+    def __init__(self, page: Dict):
+        self._database_id = page.get('id')         
+    
+    def _init_properties(self):
+        """Inicializa as propriedades com base nas anotações da classe"""
+        for prop_name, prop_type in self._properties.items():
+            setattr(self, prop_name, prop_type)
+    
+    
+    @classmethod
+    def from_notion(cls, page: Dict) -> None:
+        """Converte do formato Notion para o modelo"""
+        instance = cls(page)
+        instance._database_id = page.get('id')
+
+        for prop_name,prop_values in page['properties'].items():
+            prop_name_tratada = prop_name.strip().lower()
+            prop_type = prop_values.get('type')
+            if prop_name not in instance._properties:
+                instance._properties[prop_name_tratada] = prop_type
+        
+        instance._init_properties()
+        return instance
+    
+
+    
 
 class NotionModel:
     """Base class for Notion models with hybrid approach"""
