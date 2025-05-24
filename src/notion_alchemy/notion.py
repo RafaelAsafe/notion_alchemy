@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from typing import Dict, Optional, Any
 
 
+#refazer tudo
+
 @dataclass
 class NotionProperty:
     """Base class for Notion property handling"""
@@ -57,6 +59,7 @@ class SelectProperty(NotionProperty):
 
     def _format_value(self, value: str) -> Dict:
         return {"select": {"name": value}}
+
 
 
 @dataclass
