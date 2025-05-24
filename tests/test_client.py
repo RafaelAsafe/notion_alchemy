@@ -13,7 +13,7 @@ def test_request_page():
     resultado = client.get_page(PAGE_ID)
     assert resultado is not None
 
-
+# teste query
 def test_query_database():
     client = NotionClient(API_KEY)
     pagina = client.get_database(DATABASE_ID)
