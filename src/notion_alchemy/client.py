@@ -1,7 +1,7 @@
 import requests
 import datetime
 from typing import Dict,Type, List, Any
-from notion_alchemy.models import NotionModel
+from notion_alchemy.models import NotionModel, NotionDatabaseModel
 
 
 class NotionClient:
@@ -23,7 +23,16 @@ class NotionClient:
         response.raise_for_status()
         return response.json()
     
-    def query_database(self, model_class: Type[NotionModel], **filters) -> List[NotionModel]:
+    def get_database(self, database_id: str) -> Dict:
+        """Get raw database data from Notion"""
+        url = f"{self.base_url}/databases/{database_id}"
+        response = requests.get(url, headers=self.headers)
+        response.raise_for_status()
+        return response.json()
+
+
+    def query_database(self, model_class: Type[NotionDatabaseModel], **filters) -> List[NotionModel]:
+       
         """Query database with optional filters"""
         if not model_class._database_id:
             raise ValueError("Model class must define _database_id")
@@ -38,13 +47,15 @@ class NotionClient:
             model_class.from_notion(page)
             for page in response.json()['results']
         ]
-    
+
+# refazendo 
     def _build_query_payload(self, filters: Dict) -> Dict:
         """Convert Python filters to Notion API format"""
         if not filters:
             return {}
         
         filter_conditions = []
+
         for field, value in filters.items():
             filter_conditions.append({
                 "property": field,
@@ -58,7 +69,9 @@ class NotionClient:
                 "and": filter_conditions
             }
         }
-    
+
+
+
     def _get_filter_type(self, value: Any) -> str:
         """Determine filter type based on value"""
         if isinstance(value, bool):
@@ -68,7 +81,10 @@ class NotionClient:
         elif isinstance(value, datetime):
             return "date"
         return "rich_text"
-    
+
+
+# refazer
+#   
     def create_page(self, model: NotionModel) -> NotionModel:
         """Create new page from model"""
         if not model._database_id:
