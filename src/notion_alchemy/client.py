@@ -1,7 +1,10 @@
 import requests
 import datetime
+import json
+
 from typing import Dict,Type, List, Any
 from notion_alchemy.models import NotionModel, NotionDatabaseModel
+from notion_alchemy.notion import NotionProperty
 
 
 class NotionClient:
@@ -31,60 +34,43 @@ class NotionClient:
         return response.json()
 
 
-    def query_database(self, model_class: Type[NotionDatabaseModel], **filters) -> List[NotionModel]:
+    def query_database(self, model_class: Type[NotionDatabaseModel], filters: List[dict] = None) -> List[NotionDatabaseModel]:
        
         """Query database with optional filters"""
         if not model_class._database_id:
             raise ValueError("Model class must define _database_id")
         
         url = f"{self.base_url}/databases/{model_class._database_id}/query"
-        payload = self._build_query_payload(filters)
+        query = self._build_query_payload(filters)
         
-        response = requests.post(url, headers=self.headers, json=payload)
+        response = requests.post(url, headers=self.headers, json=query)
         response.raise_for_status()
-        
-        return [
-            model_class.from_notion(page)
-            for page in response.json()['results']
-        ]
+# melhorar a interação com o retorno
+#    quero poder acessar as paginas e fazer operações com elas 
+            #exemplo quero acessar todas as paginas da tags casa e excluir as que tem name repetidas, mandando patch com os ids para atualizar a pagina para arquivada    
+#    Definir como objetos? 
+#    Definir com dataframe?       
+        return response.json()['results']
 
-# refazendo 
-    def _build_query_payload(self, filters: Dict) -> Dict:
-        """Convert Python filters to Notion API format"""
+# refazendo
+# precisa implementar o or 
+    def _build_query_payload(self, filters: List[dict]) -> Dict:
+        """
+        Recebe uma lista de filtros (cada um já no formato Notion, ex: prop.contains("Python"))
+        e monta o payload para a API.
+        """
         if not filters:
             return {}
-        
-        filter_conditions = []
 
-        for field, value in filters.items():
-            filter_conditions.append({
-                "property": field,
-                self._get_filter_type(value): {
-                    "equals": str(value) if not isinstance(value, (bool, int, float)) else value
-                }
-            })
-        
         return {
             "filter": {
-                "and": filter_conditions
+                "and": [filters]
             }
         }
 
 
-
-    def _get_filter_type(self, value: Any) -> str:
-        """Determine filter type based on value"""
-        if isinstance(value, bool):
-            return "checkbox"
-        elif isinstance(value, (int, float)):
-            return "number"
-        elif isinstance(value, datetime):
-            return "date"
-        return "rich_text"
-
-
 # refazer
-#   
+#feito por ia 
     def create_page(self, model: NotionModel) -> NotionModel:
         """Create new page from model"""
         if not model._database_id:
