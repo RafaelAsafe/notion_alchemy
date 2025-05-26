@@ -1,43 +1,22 @@
-# Configure vscode to poetry projects
+# Notion Alchemy 
 
-obs: remove code runner
+Criei esse projeto para:
+- Ampliar a automatização no uso do notion
+- Facilitar o uso da api do notion
+- Tenho defict de atenção e ferramentas de organização estão melhorando minha qualidade de vida, espero que seja util para outras pessoas também!
+- Aprender mais sobre python e projetos
 
-## virtual env
+Organizei o projeto da seguinte forma 
 
-add poetry virtual env path in virtualenv paths config vscode 
-poetry env activate shows the path
+Client
+- interação direta com a api
 
+Models 
+- Classes para organizar databases e paginas
 
-## configurations for debug with poetry 
+Notion 
+- Classes para lidar com as propriedades do notion
 
-add lauch config in vscode settings 
+Tests
+- Espaço para testes
 
-"launch": {
-        "configurations": [                        
-                {
-                    "name": "Python Debug Test (Poetry)",
-                    "type": "debugpy",
-                    "request": "launch",
-                    "module": "pytest",
-                    "args": ["${file}"],  
-                    "console": "integratedTerminal",
-                    "justMyCode": true,
-                    "env": {
-                        "PYTHONPATH": "${workspaceFolder}/tests"  
-                    }
-                },
-                {
-                    "name": "Python Debug (Poetry)",
-                    "type": "debugpy",
-                    "request": "launch",
-                    "program": "${file}",  
-                    "console": "integratedTerminal",
-                    "justMyCode": true,
-                    "args": [],  
-                    "python": "${command:python.interpreterPath}", 
-                    "env": {
-                        "PYTHONPATH": "${workspaceFolder}/src" 
-                    }
-                }
-            ]
-    }
