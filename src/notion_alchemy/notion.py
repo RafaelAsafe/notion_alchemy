@@ -4,52 +4,47 @@ from typing import Dict, Optional, Any, List
 
 @dataclass
 class OptionProperty:
-    color: str = "default"
-    id: str = "default"
-    name: str = "default"
+    color: str = ""
+    id: str = ""
+    name: str = ""
+    description: str = ""
 
-
-#feito por ia 
 @dataclass
 class NotionProperty:
+    property_id: str = ""
     name: str = ""
-    type: str = ""
+    dtype: str = ""
     value: Any = None
     raw_data: Dict = field(default_factory=dict)
-    
+
     def from_notion(self, data: Dict) -> None:
         self.raw_data = data
         self.value = self._parse_value(data)
-    
+
     def to_notion(self) -> Dict:
         return self._format_value(self.value)
 
-    
     def _parse_value(self, data: Dict) -> Any:
         raise NotImplementedError
-   
+
     def _format_value(self, value: Any) -> Dict:
         raise NotImplementedError
 
     # Filtros genéricos
     def equals(self, value): return {
-        "property": self.name, self.type: {"equals": value}}
+        "property": self.name, self.dtype: {"equals": value}}
 
     def does_not_equal(self, value): return {
-        "property": self.name, self.type: {"does_not_equal": value}}
+        "property": self.name, self.dtype: {"does_not_equal": value}}
 
     def is_empty(self): return {
-        "property": self.name, self.type: {"is_empty": True}}
+        "property": self.name, self.dtype: {"is_empty": True}}
     def is_not_empty(self): return {
-        "property": self.name, self.type: {"is_not_empty": True}}
-    
-     
-
+        "property": self.name, self.dtype: {"is_not_empty": True}}
 
 @dataclass
 class TitleProperty(NotionProperty):
-    def __init__(self, name: str):
-        super().__init__(name=name, type="title")
+    dtype: str = "title"
 
     def _parse_value(self, data: Dict) -> str:
         return "".join([t["plain_text"] for t in data.get("title", [])])
@@ -58,21 +53,19 @@ class TitleProperty(NotionProperty):
         return {"title": [{"text": {"content": value}}]}
 
     def contains(self, value): return {
-        "property": self.name, self.type: {"contains": value}}
+        "property": self.name, self.dtype: {"contains": value}}
 
     def does_not_contain(self, value): return {
-        "property": self.name, self.type: {"does_not_contain": value}}
+        "property": self.name, self.dtype: {"does_not_contain": value}}
 
     def starts_with(self, value): return {
-        "property": self.name, self.type: {"starts_with": value}}
+        "property": self.name, self.dtype: {"starts_with": value}}
     def ends_with(self, value): return {
-        "property": self.name, self.type: {"ends_with": value}}
-
+        "property": self.name, self.dtype: {"ends_with": value}}
 
 @dataclass
 class RichTextProperty(NotionProperty):
-    def __init__(self, name: str):
-        super().__init__(name=name, type="rich_text")
+    dtype: str = "rich_text"
 
     def _parse_value(self, data: Dict) -> str:
         return "".join([t["plain_text"] for t in data.get("rich_text", [])])
@@ -81,21 +74,19 @@ class RichTextProperty(NotionProperty):
         return {"rich_text": [{"text": {"content": value}}]}
 
     def contains(self, value): return {
-        "property": self.name, self.type: {"contains": value}}
+        "property": self.name, self.dtype: {"contains": value}}
 
     def does_not_contain(self, value): return {
-        "property": self.name, self.type: {"does_not_contain": value}}
+        "property": self.name, self.dtype: {"does_not_contain": value}}
 
     def starts_with(self, value): return {
-        "property": self.name, self.type: {"starts_with": value}}
+        "property": self.name, self.dtype: {"starts_with": value}}
     def ends_with(self, value): return {
-        "property": self.name, self.type: {"ends_with": value}}
-
+        "property": self.name, self.dtype: {"ends_with": value}}
 
 @dataclass
 class NumberProperty(NotionProperty):
-    def __init__(self, name: str):
-        super().__init__(name=name, type="number")
+    dtype: str = "number"
 
     def _parse_value(self, data: Dict) -> Optional[float]:
         return data.get("number")
@@ -104,21 +95,19 @@ class NumberProperty(NotionProperty):
         return {"number": value}
 
     def greater_than(self, value): return {
-        "property": self.name, self.type: {"greater_than": value}}
+        "property": self.name, self.dtype: {"greater_than": value}}
 
     def less_than(self, value): return {
-        "property": self.name, self.type: {"less_than": value}}
+        "property": self.name, self.dtype: {"less_than": value}}
 
     def greater_than_or_equal_to(self, value): return {
-        "property": self.name, self.type: {"greater_than_or_equal_to": value}}
+        "property": self.name, self.dtype: {"greater_than_or_equal_to": value}}
     def less_than_or_equal_to(self, value): return {
-        "property": self.name, self.type: {"less_than_or_equal_to": value}}
-
+        "property": self.name, self.dtype: {"less_than_or_equal_to": value}}
 
 @dataclass
 class CheckboxProperty(NotionProperty):
-    def __init__(self, name: str):
-        super().__init__(name=name, type="checkbox")
+    dtype: str = "checkbox"
 
     def _parse_value(self, data: Dict) -> Optional[bool]:
         return data.get("checkbox")
@@ -127,13 +116,11 @@ class CheckboxProperty(NotionProperty):
         return {"checkbox": value}
 
     def equals(self, value: bool): return {
-        "property": self.name, self.type: {"equals": value}}
-
+        "property": self.name, self.dtype: {"equals": value}}
 
 @dataclass
 class SelectProperty(NotionProperty):
-    def __init__(self, name: str):
-        super().__init__(name=name, type="select")
+    dtype: str = "select"
 
     def _parse_value(self, data: Dict) -> Optional[str]:
         select = data.get("select")
@@ -142,25 +129,32 @@ class SelectProperty(NotionProperty):
     def _format_value(self, value: str) -> Dict:
         return {"select": {"name": value}}
 
-# revisado inicio 
 @dataclass
 class MultiSelectProperty(NotionProperty):
-    
-    def __init__(self, name: str, options: Optional[List[OptionProperty]] = None):
-        super().__init__(name=name, type="multi_select")
-        self.options: List[OptionProperty] = field(default_factory=list)
+    dtype: str = "multi_select"
+    options: List[OptionProperty] = field(default_factory=list)
+
+    def __post_init__(self):
+        self.populate_options()
+
+    def populate_options(self):
+        options = (
+            self.raw_data.get("multi_select", {}).get("options")
+            if self.raw_data else None
+        )
+        if options:
+            self.options = [OptionProperty(**opt) for opt in options]
+        else:
+            self.options = []
 
     def contains(self, value): return {
-        "property": self.name, self.type: {"contains": value}}
+        "property": self.name, self.dtype: {"contains": value}}
     def does_not_contain(self, value): return {
-        "property": self.name, self.type: {"does_not_contain": value}}
-
-# revisado fim 
+        "property": self.name, self.dtype: {"does_not_contain": value}}
 
 @dataclass
 class DateProperty(NotionProperty):
-    def __init__(self, name: str):
-        super().__init__(name=name, type="date")
+    dtype: str = "date"
 
     def _parse_value(self, data: Dict) -> Optional[datetime]:
         date_data = data.get("date")
@@ -172,108 +166,98 @@ class DateProperty(NotionProperty):
         return {"date": {"start": value.isoformat()}}
 
     def before(self, value): return {
-        "property": self.name, self.type: {"before": value}}
+        "property": self.name, self.dtype: {"before": value}}
 
     def after(self, value): return {
-        "property": self.name, self.type: {"after": value}}
+        "property": self.name, self.dtype: {"after": value}}
 
     def on_or_before(self, value): return {
-        "property": self.name, self.type: {"on_or_before": value}}
+        "property": self.name, self.dtype: {"on_or_before": value}}
 
     def on_or_after(self, value): return {
-        "property": self.name, self.type: {"on_or_after": value}}
+        "property": self.name, self.dtype: {"on_or_after": value}}
 
     def past_week(self): return {
-        "property": self.name, self.type: {"past_week": {}}}
+        "property": self.name, self.dtype: {"past_week": {}}}
 
     def past_month(self): return {
-        "property": self.name, self.type: {"past_month": {}}}
+        "property": self.name, self.dtype: {"past_month": {}}}
 
     def past_year(self): return {
-        "property": self.name, self.type: {"past_year": {}}}
+        "property": self.name, self.dtype: {"past_year": {}}}
 
     def this_week(self): return {
-        "property": self.name, self.type: {"this_week": {}}}
+        "property": self.name, self.dtype: {"this_week": {}}}
 
     def next_week(self): return {
-        "property": self.name, self.type: {"next_week": {}}}
+        "property": self.name, self.dtype: {"next_week": {}}}
 
     def this_month(self): return {
-        "property": self.name, self.type: {"this_month": {}}}
+        "property": self.name, self.dtype: {"this_month": {}}}
 
     def next_month(self): return {
-        "property": self.name, self.type: {"next_month": {}}}
+        "property": self.name, self.dtype: {"next_month": {}}}
 
     def this_year(self): return {
-        "property": self.name, self.type: {"this_year": {}}}
+        "property": self.name, self.dtype: {"this_year": {}}}
     def next_year(self): return {
-        "property": self.name, self.type: {"next_year": {}}}
-
+        "property": self.name, self.dtype: {"next_year": {}}}
 
 @dataclass
 class PeopleProperty(NotionProperty):
-    def __init__(self, name: str):
-        super().__init__(name=name, type="people")
+    dtype: str = "people"
 
     def contains(self, value): return {
-        "property": self.name, self.type: {"contains": value}}
+        "property": self.name, self.dtype: {"contains": value}}
     def does_not_contain(self, value): return {
-        "property": self.name, self.type: {"does_not_contain": value}}
-
+        "property": self.name, self.dtype: {"does_not_contain": value}}
 
 @dataclass
 class FilesProperty(NotionProperty):
-    def __init__(self, name: str):
-        super().__init__(name=name, type="files")
+    dtype: str = "files"
     # Apenas is_empty e is_not_empty (herdado)
-
 
 @dataclass
 class RelationProperty(NotionProperty):
-    def __init__(self, name: str):
-        super().__init__(name=name, type="relation")
+    dtype: str = "relation"
 
     def contains(self, value): return {
-        "property": self.name, self.type: {"contains": value}}
+        "property": self.name, self.dtype: {"contains": value}}
     def does_not_contain(self, value): return {
-        "property": self.name, self.type: {"does_not_contain": value}}
-
+        "property": self.name, self.dtype: {"does_not_contain": value}}
 
 @dataclass
 class FormulaProperty(NotionProperty):
-    def __init__(self, name: str):
-        super().__init__(name=name, type="formula")
+    dtype: str = "formula"
     # Filtros para formula são aninhados por tipo:
 
     def string_contains(self, value): return {
-        "property": self.name, self.type: {"string": {"contains": value}}}
+        "property": self.name, self.dtype: {"string": {"contains": value}}}
 
     def string_starts_with(self, value): return {
-        "property": self.name, self.type: {"string": {"starts_with": value}}}
+        "property": self.name, self.dtype: {"string": {"starts_with": value}}}
 
     def string_ends_with(self, value): return {
-        "property": self.name, self.type: {"string": {"ends_with": value}}}
+        "property": self.name, self.dtype: {"string": {"ends_with": value}}}
 
     def number_equals(self, value): return {
-        "property": self.name, self.type: {"number": {"equals": value}}}
+        "property": self.name, self.dtype: {"number": {"equals": value}}}
 
     def number_greater_than(self, value): return {
-        "property": self.name, self.type: {"number": {"greater_than": value}}}
+        "property": self.name, self.dtype: {"number": {"greater_than": value}}}
 
     def number_less_than(self, value): return {
-        "property": self.name, self.type: {"number": {"less_than": value}}}
+        "property": self.name, self.dtype: {"number": {"less_than": value}}}
 
     def checkbox_equals(self, value): return {
-        "property": self.name, self.type: {"checkbox": {"equals": value}}}
+        "property": self.name, self.dtype: {"checkbox": {"equals": value}}}
 
     def date_before(self, value): return {
-        "property": self.name, self.type: {"date": {"before": value}}}
+        "property": self.name, self.dtype: {"date": {"before": value}}}
 
     def date_after(self, value): return {
-        "property": self.name, self.type: {"date": {"after": value}}}
+        "property": self.name, self.dtype: {"date": {"after": value}}}
 
-
-#feito por mim 
 # Mapeamento do tipo do Notion para a classe Python correspondente
 PROPERTY_TYPE_MAP = {
     "title": TitleProperty,
@@ -289,7 +273,10 @@ PROPERTY_TYPE_MAP = {
     "formula": FormulaProperty,
 }
 
-
 def get_property_class(property_type: str) -> Optional[type]:
     """Retorna a classe correspondente ao tipo de propriedade do Notion."""
     return PROPERTY_TYPE_MAP.get(property_type, NotionProperty)
+    
+def create_property(name: str, property_type: str, raw_data: Optional[Dict] = None) -> NotionProperty:
+    prop_class = get_property_class(property_type)
+    return prop_class(name=name, raw_data=raw_data)
