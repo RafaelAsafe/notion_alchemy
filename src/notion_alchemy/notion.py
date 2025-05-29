@@ -45,7 +45,7 @@ class TitleProperty(NotionProperty):
     dtype: str = "title"
 
     def _parse_value(self, data: Dict) -> str:
-        return "".join([t["plain_text"] for t in data.get("title", [])])
+        return "".join([t["plain_text"] for t in data.get("title", ["None"])])
 
     def _format_value(self, value: str) -> Dict:
         return {"title": [{"text": {"content": value}}]}
@@ -67,7 +67,7 @@ class RichTextProperty(NotionProperty):
 
 
     def _parse_value(self, data: Dict) -> str:
-        return "".join([t["plain_text"] for t in data.get("rich_text", [])])
+        return "".join([t["plain_text"] for t in data.get("rich_text", ["None"])])
 
     def _format_value(self, value: str) -> Dict:
         return {"rich_text": [{"text": {"content": value}}]}
@@ -163,7 +163,7 @@ class MultiSelectProperty(NotionProperty):
         multi_select = data.get("multi_select")
         if multi_select and isinstance(multi_select, list):
             return [opt.get("name") for opt in multi_select]
-        return []
+        return ["None"]
     
     def _format_value(self, value: List[str]) -> Dict:
         # Formata para o padrão esperado pela API do Notion
@@ -234,7 +234,7 @@ class PeopleProperty(NotionProperty):
         people = data.get("people")
         if people and isinstance(people, list):
             return [p.get("name") for p in people]
-        return []
+        return ["none"]
 
     def _format_value(self, value: list) -> Dict:
         # Espera uma lista de nomes (ou ids, dependendo do uso)
@@ -253,7 +253,7 @@ class FilesProperty(NotionProperty):
         files = data.get("files")
         if files and isinstance(files, list):
             return [f.get("name") for f in files]
-        return []
+        return ["None"]
 
     def _format_value(self, value: list) -> Dict:
         # Espera uma lista de arquivos (nomes ou urls)
