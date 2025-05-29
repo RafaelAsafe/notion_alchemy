@@ -19,6 +19,7 @@ packages = [{include = "notion_alchemy", from = "src"}]
 pytest = "^8.3.5"
 pytest-cov = "^6.1.1"
 taskipy = "^1.14.1"
+pandas = "^2.2.3"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

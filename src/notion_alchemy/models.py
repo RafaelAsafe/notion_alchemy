@@ -1,10 +1,11 @@
+import pandas as pd
 from typing import Dict
 from notion_alchemy.notion import *
-
 
 class NotionDatabaseModel():
     """Classe Notion para represtação de databases"""
  
+    # trocar o nome de database_id para object_id
     _database_id: str = None
     _properties: Dict[str, NotionProperty] = {}
 
@@ -15,7 +16,40 @@ class NotionDatabaseModel():
         """Inicializa as propriedades com base nas anotações da classe"""
         for prop_name, prop_type in self._properties.items():
             setattr(self, prop_name, prop_type)
+        
+    def get_property_names(self) -> list:
+        property_names = [prop.name for prop in self._properties.values()]
+        property_names.append('page_id')
+        return property_names
     
+    def _init_properties_data(self):
+        self._properties_data = {prop_name:[] for prop_name in self.get_property_names()}
+    
+    def to_pandas(self) -> Dict[str, Any]:
+        df = pd.DataFrame(self._properties_data)
+        df.set_index('page_id', inplace=True)
+        return df
+
+    
+    #ajustar o retorno de valores
+ 
+    def populate(self, response: dict):
+        """ cria um dicionario de proprieddades e popula o modelo com os dados das páginas"""
+        page_init_value =len(self._properties_pages)
+
+        response = response.get('results', [])
+
+        for page in response:
+            page_model = NotionDatabaseModel.from_notion(page)
+            self._properties_pages.append(page_model)
+            self._properties_data['page_id'].append(page_model._database_id)
+
+            for prop_name, prop_obj in page_model._properties.items():
+                if prop_obj.name not in self._properties_data.keys():
+                    self._properties_data[prop_obj.name] = []
+                self._properties_data[prop_obj.name].append(prop_obj.value)
+        
+        return f'o database foi populado com sucesso, contém {len(self._properties_pages)- page_init_value} páginas.'
     
     @classmethod
     def from_notion(cls, page: Dict) -> None:
