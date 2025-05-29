@@ -17,7 +17,7 @@ class NotionProperty(ABC):
     property_id: str = ""
     name: str = ""
     dtype: str = ""
-    value: Any = None
+    value: Any = "None"
     raw_data: Dict = field(default_factory=dict)
 
 
@@ -89,7 +89,7 @@ class StatusProperty(NotionProperty):
 
     def _parse_value(self, data: Dict) -> Optional[str]:
         status = data.get("status")
-        return status.get("name","") if status else None
+        return status.get("name","") if status else "None"
 
     def _format_value(self, value: str) -> Dict:
         return {"status": {"name": value}}
@@ -108,7 +108,7 @@ class StatusProperty(NotionProperty):
 @dataclass
 class NumberProperty(NotionProperty):
     dtype: str = "number"
-    value: Optional[float] = None
+    value: Optional[float] = 0
 
 
     def _parse_value(self, data: Dict) -> Optional[float]:
@@ -149,7 +149,7 @@ class SelectProperty(NotionProperty):
 
     def _parse_value(self, data: Dict) -> Optional[str]:
         select = data.get("select")
-        return select.get("name","") if select else None
+        return select.get("name","None") if select else "None"
 
     def _format_value(self, value: str) -> Dict:
         return {"select": {"name": value}}
@@ -181,7 +181,7 @@ class DateProperty(NotionProperty):
     def _parse_value(self, data: Dict) -> Optional[datetime]:
         date_data = data.get("date")
         if not date_data:
-            return None
+            return "None"
         return datetime.fromisoformat(date_data["start"])
 
     def _format_value(self, value: datetime) -> Dict:
