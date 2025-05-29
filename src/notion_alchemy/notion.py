@@ -17,7 +17,7 @@ class NotionProperty(ABC):
     property_id: str = ""
     name: str = ""
     dtype: str = ""
-    value: Any = None
+    value: Any = "None"
     raw_data: Dict = field(default_factory=dict)
 
 
@@ -45,7 +45,7 @@ class TitleProperty(NotionProperty):
     dtype: str = "title"
 
     def _parse_value(self, data: Dict) -> str:
-        return "".join([t["plain_text"] for t in data.get("title", [])])
+        return "".join([t["plain_text"] for t in data.get("title", ["None"])])
 
     def _format_value(self, value: str) -> Dict:
         return {"title": [{"text": {"content": value}}]}
@@ -67,7 +67,7 @@ class RichTextProperty(NotionProperty):
 
 
     def _parse_value(self, data: Dict) -> str:
-        return "".join([t["plain_text"] for t in data.get("rich_text", [])])
+        return "".join([t["plain_text"] for t in data.get("rich_text", ["None"])])
 
     def _format_value(self, value: str) -> Dict:
         return {"rich_text": [{"text": {"content": value}}]}
@@ -89,7 +89,7 @@ class StatusProperty(NotionProperty):
 
     def _parse_value(self, data: Dict) -> Optional[str]:
         status = data.get("status")
-        return status.get("name","") if status else None
+        return status.get("name","") if status else "None"
 
     def _format_value(self, value: str) -> Dict:
         return {"status": {"name": value}}
@@ -108,7 +108,7 @@ class StatusProperty(NotionProperty):
 @dataclass
 class NumberProperty(NotionProperty):
     dtype: str = "number"
-    value: Optional[float] = None
+    value: Optional[float] = 0
 
 
     def _parse_value(self, data: Dict) -> Optional[float]:
@@ -149,7 +149,7 @@ class SelectProperty(NotionProperty):
 
     def _parse_value(self, data: Dict) -> Optional[str]:
         select = data.get("select")
-        return select.get("name","") if select else None
+        return select.get("name","None") if select else "None"
 
     def _format_value(self, value: str) -> Dict:
         return {"select": {"name": value}}
@@ -163,7 +163,7 @@ class MultiSelectProperty(NotionProperty):
         multi_select = data.get("multi_select")
         if multi_select and isinstance(multi_select, list):
             return [opt.get("name") for opt in multi_select]
-        return []
+        return ["None"]
     
     def _format_value(self, value: List[str]) -> Dict:
         # Formata para o padrão esperado pela API do Notion
@@ -181,7 +181,7 @@ class DateProperty(NotionProperty):
     def _parse_value(self, data: Dict) -> Optional[datetime]:
         date_data = data.get("date")
         if not date_data:
-            return None
+            return "None"
         return datetime.fromisoformat(date_data["start"])
 
     def _format_value(self, value: datetime) -> Dict:
@@ -234,7 +234,7 @@ class PeopleProperty(NotionProperty):
         people = data.get("people")
         if people and isinstance(people, list):
             return [p.get("name") for p in people]
-        return []
+        return ["none"]
 
     def _format_value(self, value: list) -> Dict:
         # Espera uma lista de nomes (ou ids, dependendo do uso)
@@ -253,7 +253,7 @@ class FilesProperty(NotionProperty):
         files = data.get("files")
         if files and isinstance(files, list):
             return [f.get("name") for f in files]
-        return []
+        return ["None"]
 
     def _format_value(self, value: list) -> Dict:
         # Espera uma lista de arquivos (nomes ou urls)
@@ -264,10 +264,10 @@ class RelationProperty(NotionProperty):
     dtype: str = "relation"
 
     def _parse_value(self, data: Dict) -> Optional[list]:
-        relation = data.get("relation")
+        relation = data.get("relation",{})
         if relation and isinstance(relation, list):
-            return [r.get("id") for r in relation]
-        return []
+            return [r.get("id","None") for r in relation]
+        return ["None"]
 
     def _format_value(self, value: list) -> Dict:
         # Espera uma lista de ids de páginas relacionadas
