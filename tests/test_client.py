@@ -21,5 +21,3 @@ def test_query_database():
     database = NotionDatabaseModel.from_notion(page=pagina)
     resultado = client.query_database(database,database.tags.contains('Casa'))
     assert resultado is not None
-
-# 
