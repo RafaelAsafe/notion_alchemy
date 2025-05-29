@@ -50,7 +50,7 @@ class NotionClient:
             #exemplo quero acessar todas as paginas da tags casa e excluir as que tem name repetidas, mandando patch com os ids para atualizar a pagina para arquivada    
 #    Definir como objetos? 
 #    Definir com dataframe?       
-        return response.json()['results']
+        return model_class.populate(response=response.json())
 
 # refazendo
 # precisa implementar o or 
