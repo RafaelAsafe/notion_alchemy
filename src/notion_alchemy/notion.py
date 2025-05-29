@@ -264,10 +264,10 @@ class RelationProperty(NotionProperty):
     dtype: str = "relation"
 
     def _parse_value(self, data: Dict) -> Optional[list]:
-        relation = data.get("relation")
+        relation = data.get("relation",{})
         if relation and isinstance(relation, list):
-            return [r.get("id") for r in relation]
-        return []
+            return [r.get("id","None") for r in relation]
+        return ["None"]
 
     def _format_value(self, value: list) -> Dict:
         # Espera uma lista de ids de páginas relacionadas
