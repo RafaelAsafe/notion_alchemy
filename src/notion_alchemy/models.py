@@ -9,6 +9,8 @@ class NotionDatabaseModel():
     _properties: Dict[str, NotionProperty] = {}
     _properties_pages: list = []
     _properties_data: Dict[str, Any] = {}
+    _properties_pages: list = []
+    _properties_data: Dict[str, Any] = {}
 
     def __init__(self, page: Dict):
         self._database_id = page.get('id')         
@@ -55,7 +57,9 @@ class NotionDatabaseModel():
         """Converte do formato Notion para o modelo"""
         instance = cls(page)
         instance._database_id = page.get('id')
+        instance._database_id = page.get('id')
 
+        for prop_name,prop_values in page.get('properties',{}).items():
         for prop_name,prop_values in page.get('properties',{}).items():
             
             prop_name_tratada = prop_name.strip().lower().replace(' ', '_')
@@ -63,8 +67,10 @@ class NotionDatabaseModel():
 
             if prop_name not in instance._properties:
                 instance._properties[prop_name_tratada] = create_property(name=prop_name, property_type=prop_type, raw_data=prop_values)
+                instance._properties[prop_name_tratada] = create_property(name=prop_name, property_type=prop_type, raw_data=prop_values)
         
         instance._init_properties()
+        instance._init_properties_data()
         instance._init_properties_data()
 
         return instance     
